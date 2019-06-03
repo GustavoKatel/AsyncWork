@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/GustavoKatel/asyncwork"
+	asyncwork "github.com/GustavoKatel/asyncwork"
 )
 
 func main() {

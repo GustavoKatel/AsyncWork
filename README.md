@@ -1,6 +1,6 @@
 # AsyncWork
 
-[![GoDoc](https://godoc.org/github.com/GustavoKatel/AsyncWork?status.svg)](https://godoc.org/github.com/GustavoKatel/AsyncWork)
+[![GoDoc](https://godoc.org/github.com/GustavoKatel/asyncwork?status.svg)](https://godoc.org/github.com/GustavoKatel/asyncwork)
 
 AsyncWork schedules and throttles function execution in golang
 
