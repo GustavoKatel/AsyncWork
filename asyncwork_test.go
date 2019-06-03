@@ -219,3 +219,51 @@ func TestRunTaggedThrottledTwo(t *testing.T) {
 
 	assert.Equal(int64(2), count)
 }
+
+func TestRunTaggedThrottledLastExec(t *testing.T) {
+	aw, ctrl := setUpAsyncWorkTest(t)
+	defer setDownAsyncWorkTest(ctrl)
+	assert := assert.New(t)
+
+	assert.Nil(aw.Start())
+	defer aw.Stop()
+
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	count := int64(0)
+
+	assert.Nil(aw.PostTaggedThrottledJob(func(ctx context.Context) error {
+		atomic.AddInt64(&count, 1)
+		<-time.After(300 * time.Millisecond)
+		wg.Done()
+		return nil
+	}, "500", 500*time.Millisecond))
+
+	assert.Nil(aw.PostTaggedThrottledJob(func(ctx context.Context) error {
+		atomic.AddInt64(&count, 2)
+		wg.Done()
+		return nil
+	}, "500", 500*time.Millisecond))
+
+	assert.Nil(aw.PostTaggedThrottledJob(func(ctx context.Context) error {
+		atomic.AddInt64(&count, 3)
+		wg.Done()
+		return nil
+	}, "500", 500*time.Millisecond))
+
+	assert.Equal(3, aw.Len())
+	wg.Wait()
+	assert.Equal(int64(4), count)
+	wg.Add(1)
+
+	assert.Nil(aw.PostTaggedThrottledJob(func(ctx context.Context) error {
+		atomic.AddInt64(&count, 10)
+		wg.Done()
+		return nil
+	}, "500", 500*time.Millisecond))
+
+	wg.Wait()
+
+	assert.Equal(int64(14), count)
+}

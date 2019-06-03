@@ -46,6 +46,9 @@ Pending: 0
 ```
 
 ### Throttle
+
+**When throttling, only the last call is executed within a timespan**
+
 ```go
 var wg sync.WaitGroup
 wg.Add(2)
@@ -70,11 +73,17 @@ worker.PostThrottledJob(func(ctx context.Context) error {
 	return nil
 }, 500*time.Millisecond)
 
-<-time.After(600 * time.Millisecond)
-
 worker.PostThrottledJob(func(ctx context.Context) error {
 	// Long operation 3
 	log.Printf("Operation3")
+	return nil
+}, 500*time.Millisecond)
+
+<-time.After(600 * time.Millisecond)
+
+worker.PostThrottledJob(func(ctx context.Context) error {
+	// Long operation 4
+	log.Printf("Operation4")
 	wg.Done()
 	return nil
 }, 500*time.Millisecond)
@@ -87,5 +96,6 @@ log.Printf("Pending: %v", worker.Len())
 ```
 Operation1
 Operation3
+Operation4
 Pending: 0
 ```

@@ -33,11 +33,17 @@ func main() {
 		return nil
 	}, 500*time.Millisecond)
 
-	<-time.After(600 * time.Millisecond)
-
 	worker.PostThrottledJob(func(ctx context.Context) error {
 		// Long operation 3
 		log.Printf("Operation3")
+		return nil
+	}, 500*time.Millisecond)
+
+	<-time.After(600 * time.Millisecond)
+
+	worker.PostThrottledJob(func(ctx context.Context) error {
+		// Long operation 4
+		log.Printf("Operation4")
 		wg.Done()
 		return nil
 	}, 500*time.Millisecond)

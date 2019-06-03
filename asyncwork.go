@@ -26,6 +26,10 @@ type asyncWorkImpl struct {
 
 	lastExecutionMap      map[string]time.Time
 	lastExecutionMapMutex *sync.RWMutex
+
+	// Maps tag to the last recorded call
+	throttleLastMap      map[string]*jobImpl
+	throttleLastMapMutex *sync.RWMutex
 }
 
 // New creates a new working channel
@@ -51,6 +55,9 @@ func NewWithContext(ctx context.Context) (interfaces.AsyncWork, error) {
 
 		lastExecutionMap:      map[string]time.Time{},
 		lastExecutionMapMutex: &sync.RWMutex{},
+
+		throttleLastMap:      map[string]*jobImpl{},
+		throttleLastMapMutex: &sync.RWMutex{},
 	}
 
 	return aw, nil
@@ -104,6 +111,40 @@ func (aw *asyncWorkImpl) background() {
 	}
 }
 
+func (aw *asyncWorkImpl) waitAndSchedule(job *jobImpl, delay time.Duration) {
+	aw.throttleLastMapMutex.Lock()
+
+	_, prs := aw.throttleLastMap[job.tag]
+	aw.throttleLastMap[job.tag] = job
+
+	aw.throttleLastMapMutex.Unlock()
+
+	if prs {
+		return
+	}
+
+	tag := job.tag
+
+	go func() {
+		select {
+		case <-time.After(delay):
+			aw.throttleLastMapMutex.Lock()
+			defer aw.throttleLastMapMutex.Unlock()
+
+			lastJob, prs := aw.throttleLastMap[tag]
+			if !prs {
+				return
+			}
+
+			delete(aw.throttleLastMap, tag)
+
+			aw.PostTaggedThrottledJob(lastJob.jobFn, lastJob.tag, lastJob.delay)
+		case <-aw.ctx.Done():
+			return
+		}
+	}()
+}
+
 func (aw *asyncWorkImpl) fetchAndRun() error {
 	aw.queueMutex.Lock()
 	jobI := aw.queue.PopFront()
@@ -116,6 +157,7 @@ func (aw *asyncWorkImpl) fetchAndRun() error {
 
 	lastExecution, prs := aw.lastExecutionMap[job.tag]
 	if prs && time.Now().Sub(lastExecution) < job.delay {
+		aw.waitAndSchedule(job, job.delay-time.Now().Sub(lastExecution))
 		return nil
 	}
 
