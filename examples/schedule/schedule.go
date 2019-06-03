@@ -5,7 +5,7 @@ import (
 	"log"
 	"sync"
 
-	"github.com/GustavoKatel/asyncwork"
+	asyncwork "github.com/GustavoKatel/AsyncWork"
 )
 
 func main() {

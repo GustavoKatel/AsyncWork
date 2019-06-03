@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/GustavoKatel/asyncwork/interfaces"
+	"github.com/GustavoKatel/AsyncWork/interfaces"
 	"github.com/GustavoKatel/syncevent"
 	"github.com/phf/go-queue/queue"
 )

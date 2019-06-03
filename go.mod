@@ -1,4 +1,4 @@
-module github.com/GustavoKatel/asyncwork
+module github.com/GustavoKatel/AsyncWork
 
 go 1.12
 

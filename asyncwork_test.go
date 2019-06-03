@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/GustavoKatel/asyncwork/interfaces"
+	"github.com/GustavoKatel/AsyncWork/interfaces"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/golang/mock/gomock"

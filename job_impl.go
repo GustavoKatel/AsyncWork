@@ -3,7 +3,7 @@ package asyncwork
 import (
 	"time"
 
-	"github.com/GustavoKatel/asyncwork/interfaces"
+	"github.com/GustavoKatel/AsyncWork/interfaces"
 )
 
 type jobImpl struct {
